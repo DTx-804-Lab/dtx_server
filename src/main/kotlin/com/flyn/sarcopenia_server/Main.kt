@@ -1,7 +1,40 @@
 package com.flyn.sarcopenia_server
 
 import com.flyn.sarcopenia_server.server.Server
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.util.*
+
+private var isServerStart = true
 
 fun main() {
-    Server.start()
+    Thread {
+        val cmdLine = Scanner(System.`in`)
+        while (isServerStart) {
+            val input = cmdLine.nextLine()
+            input.split(" ").let {
+                command(it[0], it.drop(1))
+            }
+        }
+    }.start()
+    Thread {
+        Server.start()
+    }.start()
+}
+
+private fun command(cmd: String, args: List<String>) {
+    when (cmd) {
+        "close" -> {
+            isServerStart = false
+            Server.stop()
+        }
+        "echo" -> {
+            args.forEach { print("$it ") }
+            println()
+        }
+        else -> {
+            System.err.println("Not have this command!!")
+        }
+    }
 }

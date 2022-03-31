@@ -1,7 +1,9 @@
 package com.flyn.sarcopenia_server.server
 
-import com.flyn.sarcopenia_server.data.RequestDecoder
-import com.flyn.sarcopenia_server.data.ResponseEncoder
+import com.flyn.sarcopenia_server.decoder.RawMessageDecoder
+import com.flyn.sarcopenia_server.decoder.RequestDecoder
+import com.flyn.sarcopenia_server.handler.ConnectionHandler
+import com.flyn.sarcopenia_server.handler.FileMsgHandler
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -28,7 +30,10 @@ object Server {
                 childHandler(object: ChannelInitializer<NioSocketChannel>() {
 
                     override fun initChannel(ch: NioSocketChannel) {
-                        ch.pipeline().addLast(RequestDecoder(), ResponseEncoder(), ProcessingHandler())
+                        with (ch.pipeline()) {
+                            addLast(RequestDecoder(), RawMessageDecoder(), ConnectionHandler())
+                            addLast(FileMsgHandler())
+                        }
                     }
 
                 })
