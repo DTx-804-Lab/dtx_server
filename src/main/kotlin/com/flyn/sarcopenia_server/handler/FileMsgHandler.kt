@@ -20,7 +20,7 @@ class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
     override fun channelRead0(ctx: ChannelHandlerContext, msg: FileMessage) {
         if (!msg.isRemaining()) {
             try {
-                val path = "$storagePath/${msg.uuid}/${msg.fileName}"
+                val path = "$storagePath/${msg.uuid}/${msg.fileName.replace(":", "_")}"
                 File("$storagePath/${msg.uuid}").let { dir ->
                     if (!dir.exists()) dir.mkdirs()
                 }
