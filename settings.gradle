@@ -1,2 +1,3 @@
 rootProject.name = 'sarcopenia_server'
 
+includeBuild '../fc_message'

@@ -13,6 +13,7 @@ class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
 
     companion object {
         private const val storagePath = "C:/Users/etern/Desktop/receiveData"
+//        private const val storagePath = "./receiveData"
     }
 
     private var fileChannels: FileChannel? = null
