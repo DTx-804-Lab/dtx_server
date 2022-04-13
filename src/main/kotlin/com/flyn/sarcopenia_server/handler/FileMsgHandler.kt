@@ -1,12 +1,11 @@
 package com.flyn.sarcopenia_server.handler
 
-import com.flyn.sarcopenia_server.data.FileMessage
+import com.flyn.fc_messager.message.FileMessage
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
-import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 
 class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
@@ -19,7 +18,7 @@ class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
     private var fileChannels: FileChannel? = null
 
     override fun channelRead0(ctx: ChannelHandlerContext, msg: FileMessage) {
-        if (!msg.isRemaining()) {
+        if (fileChannels == null) {
             try {
                 val path = "$storagePath/${msg.uuid}/${msg.fileName.replace(":", "_")}"
                 File("$storagePath/${msg.uuid}").let { dir ->
@@ -30,6 +29,7 @@ class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
                 fileChannels = writer.channel
             } catch (exception: IOException) {
                 exception.printStackTrace()
+                return
             }
         }
         fileChannels?.let { channel ->
@@ -37,6 +37,7 @@ class FileMsgHandler: SimpleChannelInboundHandler<FileMessage>() {
             if (!msg.remaining) {
                 println("file receive finish")
                 channel.close()
+                fileChannels = null
             }
         }?: run { println("not find channel") }
     }

@@ -1,9 +1,6 @@
 package com.flyn.sarcopenia_server
 
 import com.flyn.sarcopenia_server.server.Server
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.*
 
 private var isServerStart = true
