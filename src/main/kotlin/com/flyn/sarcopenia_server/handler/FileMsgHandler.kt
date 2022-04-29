@@ -1,6 +1,6 @@
 package com.flyn.sarcopenia_server.handler
 
-import com.flyn.fc_messager.message.FileMessage
+import com.flyn.fc_message.message.FileMessage
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import java.io.File

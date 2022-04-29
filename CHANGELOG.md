@@ -24,3 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.0] - 2022-4-13
 ### Removed
 - Data and decoder are remove, because implement in fc_message project
+
+## [0.3.1] - 2022-4-29
+### Changed
+- fc_message project is online dependency now

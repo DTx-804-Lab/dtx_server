@@ -1,6 +1,6 @@
 package com.flyn.sarcopenia_server.server
 
-import com.flyn.fc_messager.base.RawMessageDecoder
+import com.flyn.fc_message.base.RawMessageDecoder
 import com.flyn.sarcopenia_server.handler.ConnectionHandler
 import com.flyn.sarcopenia_server.handler.FileMsgHandler
 import io.netty.bootstrap.ServerBootstrap
