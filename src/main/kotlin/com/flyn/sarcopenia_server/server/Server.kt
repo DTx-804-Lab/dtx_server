@@ -23,6 +23,7 @@ object Server {
         bossGroup = NioEventLoopGroup(1)
         workerGroup = NioEventLoopGroup()
         try {
+            println("Server start")
             val bind = ServerBootstrap().apply {
                 group(bossGroup, workerGroup)
                 channel(NioServerSocketChannel::class.java)
@@ -44,7 +45,7 @@ object Server {
             workerGroup.shutdownGracefully()
             bossGroup.shutdownGracefully()
         }
-
+        println("Server close")
     }
 
     fun stop() {
