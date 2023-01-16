@@ -89,7 +89,7 @@ fun TopBar() {
                  Text(if (isServerStart) "Server stop" else "Server start")
              }
              TextField(
-                 value = FileManager.FILE_ROOT,
+                 value = File(FileManager.FILE_ROOT).absolutePath,
                  onValueChange = {
                      FileManager.FILE_ROOT = Regex("[^a-zA-Z0-9\\\\:_]").replace(it, "")
                  },

@@ -1,17 +1,40 @@
 package com.flyn.sarcopenia_server.server
 
-import com.flyn.fc_message.base.RawMessageDecoder
-import com.flyn.sarcopenia_server.handler.ConnectionHandler
-import com.flyn.sarcopenia_server.handler.FileMsgHandler
+import com.flyn.fc_message.base.RawMessageCodec
+import com.flyn.fc_message.secure.AesCodec
+import com.flyn.fc_message.secure.RsaCodec
+import com.flyn.fc_message.secure.decodeHex
+import io.github.cdimascio.dotenv.dotenv
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder
+import io.netty.handler.codec.LengthFieldPrepender
 import java.net.InetSocketAddress
+import java.security.KeyFactory
+import java.security.interfaces.RSAPrivateKey
+import java.security.spec.PKCS8EncodedKeySpec
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 object Server {
+
+    private val privateKey: RSAPrivateKey
+    private val aesKeySpec: SecretKeySpec
+    internal val ivSpec: IvParameterSpec
+
+    init {
+        val dotenv = dotenv {
+            directory = "assets"
+            filename = "env"
+        }
+        privateKey = KeyFactory.getInstance("RSA").generatePrivate(PKCS8EncodedKeySpec(dotenv["PRIVATE_KEY"]?.decodeHex())) as RSAPrivateKey
+        aesKeySpec = SecretKeySpec(dotenv["SECRET_KEY"]?.decodeHex(), "AES")
+        ivSpec = IvParameterSpec(dotenv["IV_PARAMETER"]?.decodeHex())
+    }
 
     private var isServerStart = false
     private lateinit var bossGroup: NioEventLoopGroup
@@ -31,8 +54,12 @@ object Server {
 
                     override fun initChannel(ch: NioSocketChannel) {
                         with (ch.pipeline()) {
-                            addLast(RawMessageDecoder(), ConnectionHandler())
-                            addLast(FileMsgHandler())
+                            addLast(LengthFieldBasedFrameDecoder(10240, 0, 2, 0, 2))
+                            addLast(LengthFieldPrepender(2))
+                            addLast(AesCodec(aesKeySpec, ivSpec))
+                            addLast(RawMessageCodec())
+                            addLast(RsaCodec(privateKey = privateKey))
+                            addLast(ConnectionHandler())
                         }
                     }
 

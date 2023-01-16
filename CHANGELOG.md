@@ -6,11 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2022-03-18
+## [0.5.0] - 2022-11-04
 ### Added
-- Basic server model
-- Request and response data
-- Data decoder and encoder
+- Usage AES and RSA codec in Server
+- Add the environment file using dotenv
+
+## [0.4.0] - 2022-10-12
+### Added
+- GUI with server control function and file viewer
+
+## [0.3.1] - 2022-4-29
+### Changed
+- fc_message project is online dependency now
+
+## [0.3.0] - 2022-4-13
+### Removed
+- Data and decoder are remove, because implement in fc_message project
 
 ## [0.2.0] - 2022-3-29
 ### Added
@@ -21,14 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Request and response data
 
-## [0.3.0] - 2022-4-13
-### Removed
-- Data and decoder are remove, because implement in fc_message project
-
-## [0.3.1] - 2022-4-29
-### Changed
-- fc_message project is online dependency now
-
-## [0.4.0] - 2022-10-12
+## [0.1.0] - 2022-03-18
 ### Added
-- GUI with server control function and file viewer
+- Basic server model
+- Request and response data
+- Data decoder and encoder

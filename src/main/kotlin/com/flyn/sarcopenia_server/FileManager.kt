@@ -8,7 +8,8 @@ import com.flyn.sarcopenia_server.gui.UserFile
 
 object FileManager {
 
-    internal var FILE_ROOT by mutableStateOf("${System.getProperty("user.home")}\\Desktop\\Server")
+//    internal var FILE_ROOT by mutableStateOf("${System.getProperty("user.home")}\\Desktop\\Server")
+    internal var FILE_ROOT by mutableStateOf("Server")
     internal val STORAGE_PATH
         get() = "$FILE_ROOT/receiveData"
     internal val FILE_LIST = mutableStateListOf<UserFile>()
