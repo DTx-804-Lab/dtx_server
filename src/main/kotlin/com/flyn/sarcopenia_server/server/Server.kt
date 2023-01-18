@@ -4,6 +4,7 @@ import com.flyn.fc_message.base.RawMessageCodec
 import com.flyn.fc_message.secure.AesCodec
 import com.flyn.fc_message.secure.RsaCodec
 import com.flyn.fc_message.secure.decodeHex
+import com.flyn.sarcopenia_server.sql.SqlManager
 import io.github.cdimascio.dotenv.dotenv
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer
@@ -17,6 +18,7 @@ import java.net.InetSocketAddress
 import java.security.KeyFactory
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.PKCS8EncodedKeySpec
+import java.sql.SQLException
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
@@ -43,6 +45,12 @@ object Server {
     fun start(port: Int = 8787) {
         if (isServerStart) return
         isServerStart = true
+        try {
+            SqlManager.start()
+            SqlManager.init()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        }
         bossGroup = NioEventLoopGroup(1)
         workerGroup = NioEventLoopGroup()
         try {
@@ -78,6 +86,11 @@ object Server {
     fun stop() {
         if (!isServerStart) return
         isServerStart = false
+        try {
+            SqlManager.close()
+        } catch (e: SQLException) {
+            e.printStackTrace()
+        }
         workerGroup.shutdownGracefully()
         bossGroup.shutdownGracefully()
     }

@@ -4,3 +4,4 @@
 *.iml
 /assets/env
 .csv
+.db

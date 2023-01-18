@@ -1,11 +1,10 @@
 package com.flyn.sarcopenia_server.server
 
-import com.flyn.fc_message.message.FileMessage
-import com.flyn.fc_message.message.KeyMessage
-import com.flyn.fc_message.message.UUIDMessage
+import com.flyn.fc_message.message.*
 import com.flyn.fc_message.secure.decodeHex
 import com.flyn.sarcopenia_server.FileManager
 import com.flyn.sarcopenia_server.gui.UserFile
+import com.flyn.sarcopenia_server.sql.SqlManager
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import java.io.File
@@ -84,6 +83,20 @@ class ConnectionHandler: ChannelInboundHandlerAdapter() {
             UUIDMessage::class -> uuid = (msg as UUIDMessage).uuid
             KeyMessage::class -> key = (msg as KeyMessage).key
             FileMessage::class -> fileReceive(msg as FileMessage)
+            LoginMessagePD::class -> {
+                msg as LoginMessagePD
+                val uuid = SqlManager.loginPD(msg.patientID, msg.patientName)
+                ctx.writeAndFlush(UUIDMessage.encoder(ctx, UUIDMessage(uuid))).let {
+                    it.addListener { ctx.close() }
+                }
+            }
+            RegisterMessagePD::class -> {
+                msg as RegisterMessagePD
+                val uuid = SqlManager.registerPD(msg.patientID, msg.patientName)
+                ctx.writeAndFlush(UUIDMessage.encoder(ctx, UUIDMessage(uuid))).let {
+                    it.addListener { ctx.close() }
+                }
+            }
         }
     }
 

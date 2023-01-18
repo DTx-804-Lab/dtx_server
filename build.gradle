@@ -24,6 +24,10 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt'
     implementation compose.desktop.currentOs
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+    // https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
+    implementation 'org.xerial:sqlite-jdbc:3.40.0.0'
+
 }
 
 compose.desktop {
