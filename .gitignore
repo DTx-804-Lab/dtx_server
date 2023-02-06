@@ -5,3 +5,4 @@
 /assets/env
 *.iml
 *.db
+local.properties
