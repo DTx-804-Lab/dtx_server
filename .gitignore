@@ -1,7 +1,7 @@
 .gradle
 .idea
 /build
-*.iml
+/Server
 /assets/env
-.csv
-.db
+*.iml
+*.db
