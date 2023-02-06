@@ -9,9 +9,9 @@ version '0.6.0'
 
 repositories {
     mavenCentral()
-    maven {url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
+    maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
     maven {
-        url = uri("https://maven.pkg.github.com/eternalflyn/fc_message")
+        url = uri("https://maven.pkg.github.com/dtx-804-lab/dtx_netty_lib")
         credentials {
             Properties properties = new Properties()
             def propertiesFile = project.rootProject.file('local.properties')
@@ -29,7 +29,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    implementation 'com.flyn:fc_message:0.3.0'
+    implementation 'com.dtx804lab:dtx_netty_lib:0.3.0'
     implementation 'io.netty:netty-all:4.1.75.Final'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.20'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1-native-mt'
