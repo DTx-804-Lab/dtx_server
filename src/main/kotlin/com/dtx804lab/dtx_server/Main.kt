@@ -1,4 +1,4 @@
-package com.dtx804lab.sarcopenia_server
+package com.dtx804lab.dtx_server
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
@@ -15,9 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import com.dtx804lab.sarcopenia_server.gui.FileViewer
-import com.dtx804lab.sarcopenia_server.gui.UserFile
-import com.dtx804lab.sarcopenia_server.server.Server
+import com.dtx804lab.dtx_server.gui.FileViewer
+import com.dtx804lab.dtx_server.gui.UserFile
+import com.dtx804lab.dtx_server.server.Server
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

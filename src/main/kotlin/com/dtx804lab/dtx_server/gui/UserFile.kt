@@ -1,4 +1,4 @@
-package com.dtx804lab.sarcopenia_server.gui
+package com.dtx804lab.dtx_server.gui
 
 import java.util.*
 

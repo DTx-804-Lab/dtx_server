@@ -1,10 +1,10 @@
-package com.dtx804lab.sarcopenia_server.server
+package com.dtx804lab.dtx_server.server
 
-import com.flyn.fc_message.base.RawMessageCodec
-import com.flyn.fc_message.secure.AesCodec
-import com.flyn.fc_message.secure.RsaCodec
-import com.flyn.fc_message.secure.decodeHex
-import com.dtx804lab.sarcopenia_server.sql.SqlManager
+import com.dtx804lab.dtx_netty_lib.base.RawMessageCodec
+import com.dtx804lab.dtx_netty_lib.secure.AesCodec
+import com.dtx804lab.dtx_netty_lib.secure.RsaCodec
+import com.dtx804lab.dtx_netty_lib.secure.decodeHex
+import com.dtx804lab.dtx_server.sql.SqlManager
 import io.github.cdimascio.dotenv.dotenv
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelInitializer

@@ -1,9 +1,8 @@
-package com.dtx804lab.sarcopenia_server.sql
+package com.dtx804lab.dtx_server.sql
 
 import java.lang.StringBuilder
 import java.sql.Connection
 import java.sql.DriverManager
-import java.sql.ResultSet
 import java.util.*
 
 object SqlManager {
