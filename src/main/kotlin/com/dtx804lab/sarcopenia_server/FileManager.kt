@@ -1,10 +1,10 @@
-package com.flyn.sarcopenia_server
+package com.dtx804lab.sarcopenia_server
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.flyn.sarcopenia_server.gui.UserFile
+import com.dtx804lab.sarcopenia_server.gui.UserFile
 
 object FileManager {
 

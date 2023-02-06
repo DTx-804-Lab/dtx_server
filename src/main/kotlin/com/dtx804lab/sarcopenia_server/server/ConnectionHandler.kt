@@ -1,10 +1,10 @@
-package com.flyn.sarcopenia_server.server
+package com.dtx804lab.sarcopenia_server.server
 
 import com.flyn.fc_message.message.*
 import com.flyn.fc_message.secure.decodeHex
-import com.flyn.sarcopenia_server.FileManager
-import com.flyn.sarcopenia_server.gui.UserFile
-import com.flyn.sarcopenia_server.sql.SqlManager
+import com.dtx804lab.sarcopenia_server.FileManager
+import com.dtx804lab.sarcopenia_server.gui.UserFile
+import com.dtx804lab.sarcopenia_server.sql.SqlManager
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import java.io.File

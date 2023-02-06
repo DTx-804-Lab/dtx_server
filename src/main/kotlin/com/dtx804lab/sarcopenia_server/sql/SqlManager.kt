@@ -1,4 +1,4 @@
-package com.flyn.sarcopenia_server.sql
+package com.dtx804lab.sarcopenia_server.sql
 
 import java.lang.StringBuilder
 import java.sql.Connection

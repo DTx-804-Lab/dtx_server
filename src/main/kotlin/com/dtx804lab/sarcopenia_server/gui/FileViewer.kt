@@ -1,4 +1,4 @@
-package com.flyn.sarcopenia_server.gui
+package com.dtx804lab.sarcopenia_server.gui
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*

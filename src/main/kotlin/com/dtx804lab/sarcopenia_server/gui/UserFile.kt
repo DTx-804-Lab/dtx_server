@@ -1,4 +1,4 @@
-package com.flyn.sarcopenia_server.gui
+package com.dtx804lab.sarcopenia_server.gui
 
 import java.util.*
 
