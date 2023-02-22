@@ -22,7 +22,7 @@ class ConnectionHandler: ChannelInboundHandlerAdapter() {
         private val cipher = Cipher.getInstance("AES/CTR/NoPadding")
     }
 
-    private val buffer = ByteBuffer.allocateDirect(1024)
+    private val buffer = ByteBuffer.allocateDirect(1024 * 32)
 
     private var startTime by Delegates.notNull<Long>()
     private var fileChannels: FileChannel? = null

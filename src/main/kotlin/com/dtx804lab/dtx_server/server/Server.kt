@@ -51,7 +51,7 @@ object Server {
         } catch (e: SQLException) {
             e.printStackTrace()
         }
-        bossGroup = NioEventLoopGroup(1)
+        bossGroup = NioEventLoopGroup()
         workerGroup = NioEventLoopGroup()
         try {
             println("Server start")
@@ -62,7 +62,7 @@ object Server {
 
                     override fun initChannel(ch: NioSocketChannel) {
                         with (ch.pipeline()) {
-                            addLast(LengthFieldBasedFrameDecoder(10240, 0, 2, 0, 2))
+                            addLast(LengthFieldBasedFrameDecoder(1024 * 1024, 0, 2, 0, 2))
                             addLast(LengthFieldPrepender(2))
                             addLast(AesCodec(aesKeySpec, ivSpec))
                             addLast(RawMessageCodec())
