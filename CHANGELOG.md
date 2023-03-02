@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-01-18
+- Add the SQLite database to store the user account
+- Implement the register and login function
+
 ## [0.5.0] - 2022-11-04
 ### Added
 - Usage AES and RSA codec in Server

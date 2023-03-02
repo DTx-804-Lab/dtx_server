@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>FHIR Viewer</title>
+        <!-- import css style -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css" />
+        <link rel="stylesheet" href="style.css" type="text/css">
+        <!-- import javaScript -->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/eonasdan-bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+        <script type="text/javascript" src="myUtils.js"></script>
+        <script type="text/javascript" src="optionSetting.js"></script>
+        <script type="text/javascript" src="script.js"></script>
+
+    </head>
+    <body>
+        <div class="row justify-content-md-center">
+            <div class="col-10 col-md-6 mx-auto pt-5" id="search-area">
+                <label class="h2" for="url-input">FHIR Server URL</label>
+                <div class="input-group">
+                    <input id="url-input" type="url" class="form-control" placeholder="URL">
+                    <span class="input-group-apppend input-group-text">/</span>
+                    <select class="input-group-append" id="data-type-select" data-live-search="true" aria-label="data-type">
+                        <option selected disabled>Select data type</option>
+                    </select>
+                </div>
+                <label class="h2 pt-2" for="option-area">Search Option</label>
+                <ul class="list-group pb-2" id="option-area"></ul>
+                <div class="d-flex flex-row-reverse">
+                    <button type="button" class="btn btn-primary" id="search-resource">Search</button>
+                    <button type="button" class="btn btn-danger" id="reset-option">Reset option</button>
+                    <button type="button" class="btn btn-success" id="add-option" disabled>Add option</button>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-md-center">
+            <div class="col-12 col-md-8 mx-auto p-3" id="result">
+                <div class="d-flex justify-content-around pb-2">
+                    <button type="button" class="invisible btn btn-success" id="previous">
+                        <i class="bi bi-caret-left-fill"></i>
+                        <span>prev</span>
+                    </button>
+                    <span class="h2 text-center">Result</span>
+                    <button type="button" class="invisible btn btn-success" id="next">
+                        <span>next</span>
+                        <i class="bi bi-caret-right-fill"></i>
+                    </button>
+                </div>
+                <div class="accordion" id="container">
+                    <label class="h1" id="nothing">Nothing is here</label>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

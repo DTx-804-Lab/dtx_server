@@ -18,6 +18,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.dtx804lab.dtx_server.gui.FileViewer
 import com.dtx804lab.dtx_server.gui.UserFile
 import com.dtx804lab.dtx_server.server.Server
+import com.dtx804lab.dtx_server.web_server.WebServer
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -29,6 +30,7 @@ fun main() = application {
     Window(
         onCloseRequest = {
             Server.stop()
+            WebServer.stop()
             exitApplication()
         },
         icon = painterResource("dtx_icon.jpg"),
@@ -76,9 +78,17 @@ fun TopBar() {
          Row(horizontalArrangement = Arrangement.SpaceBetween) {
              Button(
                  onClick = {
-                     if (isServerStart) Server.stop()
-                     else GlobalScope.launch(Dispatchers.Default) {
-                         Server.start()
+                     if (isServerStart) {
+                         Server.stop()
+                         WebServer.stop()
+                     }
+                     else {
+                         GlobalScope.launch(Dispatchers.Default) {
+                             Server.start()
+                         }
+                         GlobalScope.launch(Dispatchers.Default) {
+                             WebServer.start()
+                         }
                      }
                      isServerStart = !isServerStart
                  },
