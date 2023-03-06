@@ -16,7 +16,7 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
 
     companion object {
         private const val FAVICON_ICO = "/favicon.ico"
-        private val iconByte = getFileBytes("assets/favicon.ico")
+        private val iconByte = getFileBytes("assets/web/favicon.ico")
         private val homePage = getFileBytes("assets/web/index.html")
 
         private fun getFileBytes(path: String): ByteBuf {
@@ -34,35 +34,10 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         QueryStringDecoder(request.uri()).run {
             println(path())
 
-            if (path() == "/") {
-                ctx.writeAndFlush(
-                    makeResponse(Unpooled.copiedBuffer(homePage), "text/html; charset=UTF-8")
-                )
-                return
-            }
-            if (path() == FAVICON_ICO) {
-                ctx.writeAndFlush(
-                    makeResponse(Unpooled.copiedBuffer(iconByte), "image/x-icon")
-                )
-                return
-            }
-            if (path().endsWith(".js", true)) {
-                ctx.writeAndFlush(
-                    makeResponse(getFileBytes("assets/web${path()}"), "*/*")
-                )
-                return
-            }
-            if (path().endsWith(".css", true)) {
-                ctx.writeAndFlush(
-                    makeResponse(getFileBytes("assets/web${path()}"), "text/css")
-                )
-                return
-            }
+            val (buffer, type) = formatUrl(path())
+            ctx.writeAndFlush(makeResponse(buffer, type))
+
             if (parameters().isEmpty()) return
-            responseData.append("Parameter: \n")
-            parameters().forEach { (key, values) ->
-                responseData.append("  $key = ${values.joinToString(separator = ", ", postfix = "\n")}")
-            }
         }
     }
 
@@ -111,6 +86,20 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
             else set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
         }
         return response
+    }
+
+    private fun formatUrl(path: String): Pair<ByteBuf, String> {
+        if (path == "/")
+            return Unpooled.copiedBuffer(homePage) to "text/html; charset=UTF-8"
+        if (path == FAVICON_ICO)
+            return Unpooled.copiedBuffer(iconByte) to "image/x-icon"
+        if (path.endsWith(".js", true))
+            return getFileBytes("assets/web${path}") to "*/*"
+        if (path.endsWith(".css", true))
+            return getFileBytes("assets/web${path}") to "text/css"
+        if (path.endsWith(".txt", true))
+            return getFileBytes("assets/web${path}") to "text/plain; charset=UTF-8"
+        return Unpooled.EMPTY_BUFFER to "*/*"
     }
 
     private fun isKeepAlive() = HttpUtil.isKeepAlive(request)

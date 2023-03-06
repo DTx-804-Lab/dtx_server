@@ -10,12 +10,20 @@ import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpServerCodec
 import io.netty.handler.codec.http.HttpServerExpectContinueHandler
 import io.netty.handler.ssl.SslContextBuilder
+import java.io.FileInputStream
 import java.net.InetSocketAddress
 
 object WebServer {
 
     private const val SSL = false
     private const val PORT = 48487
+    private val sslContext by lazy {
+        if (!SSL) return@lazy null
+        SslContextBuilder.forServer(
+            FileInputStream("assets/ssl/server.crt"),
+            FileInputStream("assets/ssl/server.key")
+        ).build()
+    }
 
     private var isServerStart = false
     private lateinit var bossGroup: NioEventLoopGroup
@@ -31,11 +39,11 @@ object WebServer {
             val bind = ServerBootstrap().apply {
                 group(bossGroup, workerGroup)
                 channel(NioServerSocketChannel::class.java)
-                childHandler(object: ChannelInitializer<NioSocketChannel>() {
+                childHandler(object : ChannelInitializer<NioSocketChannel>() {
 
                     override fun initChannel(ch: NioSocketChannel) {
-                        with (ch.pipeline()) {
-//                            if (SSL) addLast(sslContext!!.newHandler(ch.alloc()))
+                        with(ch.pipeline()) {
+                            if (SSL) addLast(sslContext!!.newHandler(ch.alloc()))
                             addLast(HttpServerCodec())
                             addLast(HttpObjectAggregator(1024 * 1024))
                             addLast(HttpServerExpectContinueHandler())
