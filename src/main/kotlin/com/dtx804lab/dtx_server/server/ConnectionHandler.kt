@@ -1,7 +1,7 @@
 package com.dtx804lab.dtx_server.server
 
 import com.dtx804lab.dtx_netty_lib.message.*
-import com.dtx804lab.dtx_server.FileManager
+import com.dtx804lab.dtx_server.utils.FileManager
 import com.dtx804lab.dtx_server.gui.UserFile
 import com.dtx804lab.dtx_server.sql.SqlManager
 import io.netty.channel.ChannelHandlerContext
@@ -57,6 +57,7 @@ class ConnectionHandler: ChannelInboundHandlerAdapter() {
                 println("file receive finish")
                 channel.close()
                 fileChannels = null
+                SqlManager.saveFile(uuid, msg.fileName)
                 UserFile(uuid, msg.fileName).takeIf {
                     !FileManager.FILE_LIST.contains(it)
                 }?.let {

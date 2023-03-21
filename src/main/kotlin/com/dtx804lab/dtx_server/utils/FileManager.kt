@@ -1,4 +1,4 @@
-package com.dtx804lab.dtx_server
+package com.dtx804lab.dtx_server.utils
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf

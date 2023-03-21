@@ -1,8 +1,11 @@
 package com.dtx804lab.dtx_server.web_server
 
+import com.dtx804lab.dtx_server.utils.FileManager
+import com.dtx804lab.dtx_server.utils.JsonUtil
+import com.dtx804lab.dtx_server.sql.SqlManager
+import com.fasterxml.jackson.databind.JsonNode
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
@@ -27,48 +30,9 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         }
     }
 
-    private val responseData = StringBuilder()
     private lateinit var request: HttpRequest
 
-    private fun formatParams(ctx: ChannelHandlerContext, request: HttpRequest) {
-        QueryStringDecoder(request.uri()).run {
-            println(path())
-
-            val (buffer, type) = formatUrl(path())
-            ctx.writeAndFlush(makeResponse(buffer, type))
-
-            if (parameters().isEmpty()) return
-        }
-    }
-
-    private fun formatBody(httpContent: HttpContent) {
-        val content = httpContent.content()
-        if (!content.isReadable) return
-        responseData.append(content.toString(Charset.forName("UTF-8")))
-        responseData.append("\n")
-    }
-
-    private fun dealContent(request: FullHttpRequest) {
-        request.headers().get("Content-Type")?.toString()?.let {
-            when (it.split(";")[0]) {
-                "application/json" -> {}
-                "application/x-www-form-urlencoded" -> {
-                    formatBody(request)
-                }
-            }
-        }
-    }
-
-    private fun prepareLastResponse(trailer: LastHttpContent) {
-        if (trailer.trailingHeaders().isEmpty) return
-        trailer.trailingHeaders().names().forEach { name ->
-            trailer.trailingHeaders().getAll(name).forEach { value ->
-                responseData.append("$name = $value\n")
-            }
-        }
-    }
-
-    private fun makeResponse(content: ByteBuf, contentType: String): DefaultFullHttpResponse {
+    private fun writeResponse(ctx: ChannelHandlerContext, content: ByteBuf, contentType: String) {
         val response = DefaultFullHttpResponse(
             request.protocolVersion(),
             if (request.decoderResult().isSuccess) HttpResponseStatus.OK
@@ -85,21 +49,59 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
             }
             else set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
         }
-        return response
+        ctx.writeAndFlush(response)
     }
 
-    private fun formatUrl(path: String): Pair<ByteBuf, String> {
-        if (path == "/")
-            return Unpooled.copiedBuffer(homePage) to "text/html; charset=UTF-8"
-        if (path == FAVICON_ICO)
-            return Unpooled.copiedBuffer(iconByte) to "image/x-icon"
-        if (path.endsWith(".js", true))
-            return getFileBytes("assets/web${path}") to "*/*"
-        if (path.endsWith(".css", true))
-            return getFileBytes("assets/web${path}") to "text/css"
-        if (path.endsWith(".txt", true))
-            return getFileBytes("assets/web${path}") to "text/plain; charset=UTF-8"
-        return Unpooled.EMPTY_BUFFER to "*/*"
+    private fun processGetMethod(ctx: ChannelHandlerContext, request: HttpRequest) {
+        val path = QueryStringDecoder(request.uri()).path()
+        println(path)
+        if (path == "/") {
+            writeResponse(ctx, Unpooled.copiedBuffer(homePage), "text/html; charset=UTF-8")
+            return
+        }
+        if (path == FAVICON_ICO) {
+            writeResponse(ctx, Unpooled.copiedBuffer(iconByte), "image/x-icon")
+            return
+        }
+        if (path.startsWith("/users")) {
+            val users = SqlManager.getUserList().toByteArray()
+            writeResponse(ctx, Unpooled.copiedBuffer(users), "application/json")
+            return
+        }
+        if (path.endsWith(".js", true)) {
+            writeResponse(ctx, getFileBytes("assets/web${path}"), "*/*")
+            return
+        }
+        if (path.endsWith(".css", true)) {
+            writeResponse(ctx, getFileBytes("assets/web${path}"), "text/css")
+            return
+        }
+        if (path.endsWith(".txt", true)) {
+            writeResponse(ctx, getFileBytes("assets/web${path}"), "text/plain; charset=UTF-8")
+            return
+        }
+    }
+
+    private fun processPostMethod(ctx: ChannelHandlerContext, request: FullHttpRequest) {
+        val path = QueryStringDecoder(request.uri()).path()
+        println(path)
+        val node = formatJsonContent(request.content())?: return
+        if (path.startsWith("/files")) {
+            val files = SqlManager.getFileList(node.get("token").asLong()).toByteArray()
+            writeResponse(ctx, Unpooled.copiedBuffer(files), "application/json")
+            return
+        }
+        if (path.startsWith("/download")) {
+            val uuid = SqlManager.getUuidText(node.get("token").asLong())
+            val fileName = node.get("fileName").asText()
+            writeResponse(ctx, getFileBytes("${FileManager.STORAGE_PATH}/$uuid/$fileName"), "*/*")
+            return
+        }
+    }
+
+    private fun formatJsonContent(data: ByteBuf): JsonNode? {
+        if (!data.isReadable) return null
+        return JsonUtil.mapper.readTree(data.toString(Charset.forName("UTF-8")))
     }
 
     private fun isKeepAlive() = HttpUtil.isKeepAlive(request)
@@ -113,31 +115,18 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
                     msg.protocolVersion(), HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER
                 ))
             }
-            responseData.setLength(0)
 
             when (msg.method()) {
                 HttpMethod.GET -> {
-                    formatParams(ctx, msg)
+                    processGetMethod(ctx, msg)
                 }
                 HttpMethod.POST -> {
-                    dealContent(msg as FullHttpRequest)
+                    processPostMethod(ctx, msg as FullHttpRequest)
                 }
             }
 
         }
 
-        if (msg is LastHttpContent) {
-            prepareLastResponse(msg)
-            ctx.writeAndFlush(makeResponse(
-                Unpooled.copiedBuffer(responseData.toString(), Charset.forName("UTF-8")),
-                "text/plain; charset=UTF-8"
-            )).run {
-                if (!isKeepAlive()) {
-                    println("context close")
-                    addListener(ChannelFutureListener.CLOSE)
-                }
-            }
-        }
     }
 
 }
