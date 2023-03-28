@@ -87,12 +87,12 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         println(path)
         val node = formatJsonContent(request.content())?: return
         if (path.startsWith("/files")) {
-            val files = SqlManager.getFileList(node.get("token").asLong()).toByteArray()
+            val files = SqlManager.getFileList(node.get("uuid").asText()).toByteArray()
             writeResponse(ctx, Unpooled.copiedBuffer(files), "application/json")
             return
         }
         if (path.startsWith("/download")) {
-            val uuid = SqlManager.getUuidText(node.get("token").asLong())
+            val uuid = node.get("uuid").asText()
             val fileName = node.get("fileName").asText()
             writeResponse(ctx, getFileBytes("${FileManager.STORAGE_PATH}/$uuid/$fileName"), "*/*")
             return
