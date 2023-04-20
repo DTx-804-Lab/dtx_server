@@ -1,6 +1,7 @@
 package com.dtx804lab.dtx_server.sql
 
 import com.dtx804lab.dtx_server.utils.JsonUtil
+import org.sqlite.SQLiteException
 import java.sql.Connection
 import java.sql.DriverManager
 import java.time.Instant
@@ -27,7 +28,7 @@ object SqlManager {
             }
             StringBuilder().run {
                 append("create table if not exists files (")
-                append("fileName text(256) not null,")
+                append("fileName text(256) primary key,")
                 append("uuid char(36) not null,")
                 append("date int8 not null,")
                 append("type text(16) not null,")
@@ -62,32 +63,38 @@ object SqlManager {
         val (type, date) = fileNameSplitter(fileName)
         val statement = pdDatabase.createStatement()
         statement.queryTimeout = 30
-        statement.executeUpdate("insert into files (fileName, uuid, date, type) values ('$fileName', '$uuid', $date, '$type')")
+        try {
+            statement.executeUpdate("insert into files (fileName, uuid, date, type) values ('$fileName', '$uuid', $date, '$type')")
+        } catch (exp: SQLiteException) {
+            println("File name is exist")
+        }
     }
 
     fun getFileList(uuid: String): String {
         val statement = pdDatabase.createStatement()
         statement.queryTimeout = 30
-        val response = JsonUtil.mapper.createObjectNode()
+        val fileList = JsonUtil.mapper.createArrayNode()
         StringBuilder().run {
-            append("select fileName from files where uuid = '$uuid'")
+            append("select fileName, date, type from files where uuid = '$uuid'")
             statement.executeQuery(this.toString())
         }.run {
-            val fileList = response.putArray("files")
             while (next()) {
-                fileList.add(getString("fileName"))
+                val file = JsonUtil.mapper.createObjectNode()
+                file.put("fileName", getString("fileName"))
+                file.put("date", getString("date"))
+                file.put("type", getString("type"))
+                fileList.add(file)
             }
         }
-        return JsonUtil.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response)
+        return JsonUtil.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(fileList)
     }
 
     fun getUserList(): String {
-        val response = JsonUtil.mapper.createObjectNode()
+        val userList = JsonUtil.mapper.createArrayNode()
         pdDatabase.createStatement().run {
             queryTimeout = 30
             executeQuery("select patientID, name, uuid from user")
         }.run {
-            val userList = response.putArray("user")
             while (next()) {
                 val user = JsonUtil.mapper.createObjectNode()
                 user.put("id", getString("patientID"))
@@ -96,7 +103,7 @@ object SqlManager {
                 userList.add(user)
             }
         }
-        return  JsonUtil.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response)
+        return  JsonUtil.mapper.writerWithDefaultPrettyPrinter().writeValueAsString(userList)
     }
 
     fun start() {

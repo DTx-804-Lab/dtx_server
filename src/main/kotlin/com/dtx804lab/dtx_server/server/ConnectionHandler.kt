@@ -19,10 +19,12 @@ import kotlin.properties.Delegates
 class ConnectionHandler: ChannelInboundHandlerAdapter() {
 
     companion object {
-        private val cipher = Cipher.getInstance("AES/CTR/NoPadding")
+        private const val bufferSize = 1024 * 32
     }
 
-    private val buffer = ByteBuffer.allocateDirect(1024 * 32)
+    private val cipher = Cipher.getInstance("AES/CTR/NoPadding")
+
+    private val buffer = ByteBuffer.allocateDirect(bufferSize)
 
     private var startTime by Delegates.notNull<Long>()
     private var fileChannels: FileChannel? = null
@@ -32,6 +34,7 @@ class ConnectionHandler: ChannelInboundHandlerAdapter() {
 
     private fun fileReceive(msg: FileMessage) {
         if (fileChannels == null) {
+            println("file receive ${msg.fileName}")
             try {
                 val path = "${FileManager.STORAGE_PATH}/$uuid/${msg.fileName.replace(":", "_")}"
                 val dir = File("${FileManager.STORAGE_PATH}/$uuid")
@@ -51,13 +54,13 @@ class ConnectionHandler: ChannelInboundHandlerAdapter() {
             channel.write(buffer)
             buffer.clear()
 
-            channel.write(msg.data)
-
             if (!msg.remaining) {
                 println("file receive finish")
                 channel.close()
                 fileChannels = null
-                SqlManager.saveFile(uuid, msg.fileName)
+                if (msg.fileName.startsWith("game") || msg.fileName.startsWith("shortLine")) {
+                    SqlManager.saveFile(uuid, msg.fileName)
+                }
                 UserFile(uuid, msg.fileName).takeIf {
                     !FileManager.FILE_LIST.contains(it)
                 }?.let {
