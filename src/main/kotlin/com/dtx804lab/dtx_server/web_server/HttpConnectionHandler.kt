@@ -6,13 +6,19 @@ import com.dtx804lab.dtx_server.sql.SqlManager
 import com.fasterxml.jackson.databind.JsonNode
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
+import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.*
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory
+import io.netty.handler.codec.http.multipart.FileUpload
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder
+import io.netty.util.CharsetUtil
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
+import kotlin.properties.Delegates
 
 
 class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
@@ -30,6 +36,8 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         }
     }
 
+    private var decoder: HttpPostRequestDecoder? = null
+    private var startTime by Delegates.notNull<Long>()
     private lateinit var request: HttpRequest
 
     private fun writeResponse(ctx: ChannelHandlerContext, content: ByteBuf, contentType: String) {
@@ -52,9 +60,22 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         ctx.writeAndFlush(response)
     }
 
-    private fun processGetMethod(ctx: ChannelHandlerContext, request: HttpRequest) {
-        val path = QueryStringDecoder(request.uri()).path()
-        println(path)
+    private fun closeResponse(ctx: ChannelHandlerContext) {
+        val response = DefaultFullHttpResponse(
+            request.protocolVersion(),
+            if (request.decoderResult().isSuccess) HttpResponseStatus.OK
+            else HttpResponseStatus.BAD_REQUEST,
+            Unpooled.copiedBuffer("File uploaded", CharsetUtil.UTF_8)
+        )
+        response.headers().apply {
+            set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8")
+            setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes())
+            set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+        }
+        ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE)
+    }
+
+    private fun processGetMethod(ctx: ChannelHandlerContext, path: String, request: HttpRequest) {
         if (path == "/") {
             writeResponse(ctx, Unpooled.copiedBuffer(homePage), "text/html; charset=UTF-8")
             return
@@ -82,9 +103,11 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
         }
     }
 
-    private fun processPostMethod(ctx: ChannelHandlerContext, request: FullHttpRequest) {
-        val path = QueryStringDecoder(request.uri()).path()
-        println(path)
+    private fun processPostMethod(ctx: ChannelHandlerContext, path: String, request: FullHttpRequest) {
+        if (path.startsWith("/upload")) {
+            decoder = HttpPostRequestDecoder(DefaultHttpDataFactory(true), request)
+            return
+        }
         val node = formatJsonContent(request.content())?: return
         if (path.startsWith("/files")) {
             val files = SqlManager.getFileList(node.get("uuid").asText()).toByteArray()
@@ -115,18 +138,41 @@ class HttpConnectionHandler : SimpleChannelInboundHandler<HttpObject>() {
                     msg.protocolVersion(), HttpResponseStatus.CONTINUE, Unpooled.EMPTY_BUFFER
                 ))
             }
-
+            val path = QueryStringDecoder(request.uri()).path()
+            println(path)
             when (msg.method()) {
-                HttpMethod.GET -> {
-                    processGetMethod(ctx, msg)
-                }
-                HttpMethod.POST -> {
-                    processPostMethod(ctx, msg as FullHttpRequest)
-                }
+                HttpMethod.GET -> processGetMethod(ctx, path, msg)
+                HttpMethod.POST -> processPostMethod(ctx, path, msg as FullHttpRequest)
             }
 
         }
+        if (decoder != null && msg is HttpContent) {
+            decoder!!.offer(msg)
+            if (msg is LastHttpContent) {
+                val file = decoder!!.getBodyHttpData("file")
+                if (file is FileUpload) {
+                    println(file.filename)
+                }
+                println(decoder!!.getBodyHttpData("uuid"))
+                println(decoder!!.getBodyHttpData("key"))
+                decoder!!.destroy()
+                decoder = null
+//                writeResponse(ctx, Unpooled.copiedBuffer("File uploaded", CharsetUtil.UTF_8), "text/html; charset=UTF-8")
+//                ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+                closeResponse(ctx)
+            }
+        }
 
+    }
+
+    override fun channelActive(ctx: ChannelHandlerContext) {
+        println("ConnectionHandler")
+        startTime = System.currentTimeMillis()
+        println(ctx.channel().remoteAddress())
+    }
+
+    override fun channelInactive(ctx: ChannelHandlerContext) {
+        println(System.currentTimeMillis() - startTime)
     }
 
 }

@@ -45,7 +45,7 @@ object WebServer {
                         with(ch.pipeline()) {
                             if (SSL) addLast(sslContext!!.newHandler(ch.alloc()))
                             addLast(HttpServerCodec())
-                            addLast(HttpObjectAggregator(1024 * 1024))
+                            addLast(HttpObjectAggregator(1024 * 1024 * 1024))
                             addLast(HttpServerExpectContinueHandler())
                             addLast(HttpConnectionHandler())
                         }

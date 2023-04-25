@@ -20,25 +20,60 @@ import com.dtx804lab.dtx_server.gui.UserFile
 import com.dtx804lab.dtx_server.server.Server
 import com.dtx804lab.dtx_server.utils.FileManager
 import com.dtx804lab.dtx_server.web_server.WebServer
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.File
 import java.util.*
 
-fun main() = application {
-    Window(
-        onCloseRequest = {
-            Server.stop()
-            WebServer.stop()
-            exitApplication()
-        },
-        icon = painterResource("dtx_icon.jpg"),
-        title = "Sarcopenia Server",
-        state = rememberWindowState(width = 800.dp, height = 600.dp)
-    ) {
-        app()
+private var isRunning = mutableStateOf(true)
+private var isServerStart = mutableStateOf(false)
+private var isVisible = mutableStateOf(true)
+
+fun main() = run {
+    Thread {
+        println("create thread")
+        Scanner(System.`in`).use { input ->
+            while (isRunning.value) {
+                input.nextLine().split(" ").let {
+                    when (it[0]) {
+                        "start" -> {
+                            serverStart()
+                            isServerStart.value = true
+                        }
+                        "stop" -> {
+                            serverStop()
+                            isServerStart.value = false
+                        }
+                        "open" -> isVisible.value = true
+                        "close" -> isVisible.value = false
+                        "exit" -> {
+                            isVisible.value = true
+                            isRunning.value = false
+                        }
+                    }
+                    println(it[0])
+                }
+            }
+        }
+        println("thread finish")
+    }.start()
+    application {
+        val isVisible by remember { isVisible }
+        val isRunning by remember { isRunning }
+        Window(
+            onCloseRequest = {
+                serverStop()
+                exitApplication()
+            },
+            visible = isVisible,
+            icon = painterResource("dtx_icon.jpg"),
+            title = "Sarcopenia Server",
+            state = rememberWindowState(width = 800.dp, height = 600.dp)
+        ) {
+            app()
+            if (!isRunning) {
+                serverStop()
+                exitApplication()
+            }
+        }
     }
 }
 
@@ -72,42 +107,41 @@ fun app() {
 
 @Preview
 @Composable
-@OptIn(DelicateCoroutinesApi::class)
 fun TopBar() {
-    var isServerStart by remember { mutableStateOf(false) }
+    var isServerStart by remember { isServerStart }
     Surface(color = Color.LightGray) {
-         Row(horizontalArrangement = Arrangement.SpaceBetween) {
-             Button(
-                 onClick = {
-                     if (isServerStart) {
-                         Server.stop()
-                         WebServer.stop()
-                     }
-                     else {
-                         GlobalScope.launch(Dispatchers.Default) {
-                             Server.start()
-                         }
-                         GlobalScope.launch(Dispatchers.Default) {
-                             WebServer.start()
-                         }
-                     }
-                     isServerStart = !isServerStart
-                 },
-                 modifier = Modifier
-                     .align(Alignment.CenterVertically)
-                     .padding(start = 8.dp, end = 8.dp)
-             ) {
-                 Text(if (isServerStart) "Server stop" else "Server start")
-             }
-             TextField(
-                 value = File(FileManager.FILE_ROOT).absolutePath,
-                 onValueChange = {
-                     FileManager.FILE_ROOT = Regex("[^a-zA-Z0-9\\\\:_]").replace(it, "")
-                 },
-                 label = { Text("Server Path") },
-                 modifier = Modifier.align(Alignment.CenterVertically)
-                     .fillMaxWidth()
-             )
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+            Button(
+                onClick = {
+                    if (isServerStart) serverStop()
+                    else serverStart()
+                    isServerStart = !isServerStart
+                },
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(start = 8.dp, end = 8.dp)
+            ) {
+                Text(if (isServerStart) "Server stop" else "Server start")
+            }
+            TextField(
+                value = File(FileManager.FILE_ROOT).absolutePath,
+                onValueChange = {
+                    FileManager.FILE_ROOT = Regex("[^a-zA-Z0-9\\\\:_]").replace(it, "")
+                },
+                label = { Text("Server Path") },
+                modifier = Modifier.align(Alignment.CenterVertically)
+                    .fillMaxWidth()
+            )
         }
     }
+}
+
+private fun serverStart() {
+    Thread { Server.start() }.start()
+    Thread { WebServer.start() }.start()
+}
+
+private fun serverStop() {
+    Server.stop()
+    WebServer.stop()
 }
